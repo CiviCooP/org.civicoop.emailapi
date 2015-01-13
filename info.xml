@@ -10,12 +10,15 @@
   </maintainer>
   <urls>
     <url desc="Main Extension Page">https://guthub.com/CiviCooP/org.civicoop.emailapi</url>
+    <url desc="documentation">https://guthub.com/CiviCooP/org.civicoop.emailapi/README.md</url>
   </urls>
   <releaseDate>2015-01-13</releaseDate>
   <version>1.0</version>
-  <develStage>alpha</develStage>
+  <develStage>stable</develStage>
   <compatibility>
     <ver>4.3</ver>
+    <ver>4.4</ver>
+    <ver>4.5</ver>
   </compatibility>
   <comments>This is a new, undeveloped module</comments>
   <civix>
