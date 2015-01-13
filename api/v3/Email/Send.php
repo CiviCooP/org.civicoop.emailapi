@@ -170,7 +170,7 @@ function civicrm_api3_email_send($params) {
     'status_id' => 2,
   );
   
-  $activity = self::create($activityParams);
+  $activity = CRM_Activity_BAO_Activity::create($activityParams);
   
   $returnValues = array();
   return civicrm_api3_create_success($returnValues, $params, 'Email', 'Send');
