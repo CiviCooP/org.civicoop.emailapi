@@ -29,6 +29,11 @@ function civicrm_api3_email_send($params) {
   
   $from = CRM_Core_BAO_Domain::getNameAndEmail();
   $from = "$from[0] <$from[1]>";
+  if (isset($params['from_email']) && isset($params['from_name'])) {
+    $from = $params['from_name']."<".$params['from_email'].">";
+  } elseif (isset($params['from_email']) || isset($params['from_name'])) {
+    throw new API_Exception('You have to provide both from_name and from_email');
+  }
   
 
   $domain     = CRM_Core_BAO_Domain::getDomain();
