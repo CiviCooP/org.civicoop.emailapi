@@ -106,3 +106,19 @@ function emailapi_civicrm_caseTypes(&$caseTypes) {
 function emailapi_civicrm_alterSettingsFolders(&$metaDataFolders = NULL) {
   _emailapi_civix_civicrm_alterSettingsFolders($metaDataFolders);
 }
+
+function _emailapi_is_civirules_installed() {
+  $installed = false;
+  try {
+    $extensions = civicrm_api3('Extension', 'get');
+    foreach($extensions['values'] as $ext) {
+      if ($ext['key'] == 'org.civicoop.civirules' &&$ext['status'] == 'installed') {
+        $installed = true;
+      }
+    }
+    return $installed;
+  } catch (Exception $e) {
+    return false;
+  }
+  return false;
+}
