@@ -28,6 +28,7 @@ function civicrm_api3_email_send($params) {
     throw new API_Exception('Parameter contact_id must be a unique id or a list of ids separated by comma');
   }
   $contactIds = explode(",", $params['contact_id']);
+  $alternativeEmailAddress = !empty($params['alternative_receiver_address']) ? $params['alternative_receiver_address'] : false;
 
   // Compatibility with CiviCRM > 4.3
   if($version >= 4.4) {
@@ -99,10 +100,26 @@ function civicrm_api3_email_send($params) {
     list($details) = CRM_Utils_Token::getTokenDetails(array($contactId), $returnProperties, false, false, null, $tokens);
     $contact = reset($details);
 
-    if ($contact['do_not_email'] || empty($contact['email']) || CRM_Utils_Array::value('is_deceased', $contact) || $contact['on_hold']) {
+    if ($alternativeEmailAddress) {
+      /**
+       * If an alternative reciepient address is given
+       * then send e-mail to that address rather than to
+       * the e-mail address of the contact
+       *
+       */
+      $toName = '';
+      $email = $alternativeEmailAddress;
+    } elseif ($contact['do_not_email'] || empty($contact['email']) || CRM_Utils_Array::value('is_deceased', $contact) || $contact['on_hold']) {
+      /**
+       * Contact is decaused or has opted out from mailings so do not send the e-mail
+       */
       throw new API_Exception('Suppressed sending e-mail to: ' . $contact['display_name']);
     } else {
+      /**
+       * Send e-mail to the contact
+       */
       $email = $contact['email'];
+      $toName = $contact['display_name'];
     }
 
     // call token hook
@@ -142,10 +159,11 @@ function civicrm_api3_email_send($params) {
     $mailParams = array(
         'groupName' => 'E-mail from API',
         'from' => $from,
-        'toName' => $contact['display_name'],
+        'toName' => $toName,
         'toEmail' => $email,
         'subject' => $messageSubject,
     );
+
     if (!$html || $contact['preferred_mail_format'] == 'Text' || $contact['preferred_mail_format'] == 'Both') {
       // render the &amp; entities in text mode, so that the links work
       $mailParams['text'] = str_replace('&amp;', '&', $text);
@@ -159,53 +177,56 @@ function civicrm_api3_email_send($params) {
       throw new API_Exception('Error sending e-mail to ' . $contact['display_name'] . ' <' . $email . '> ');
     }
 
-    $returnValues[$contactId] = array(
+    if (!$alternativeEmailAddress) {
+      $returnValues[$contactId] = array(
         'contact_id' => $contactId,
         'send' => 1,
         'status_msg' => 'Succesfully send e-mail to ' . $contact['display_name'] . ' <' . $email . '> ',
-    );
+      );
 
 
-    //create activity for sending e-mail.
-    $activityTypeID = CRM_Core_OptionGroup::getValue('activity_type', 'Email', 'name');
+      //create activity for sending e-mail.
+      $activityTypeID = CRM_Core_OptionGroup::getValue('activity_type', 'Email', 'name');
 
-    // CRM-6265: save both text and HTML parts in details (if present)
-    if ($html and $text) {
-      $details = "-ALTERNATIVE ITEM 0-\n$html\n-ALTERNATIVE ITEM 1-\n$text\n-ALTERNATIVE END-\n";
-    } else {
-      $details = $html ? $html : $text;
-    }
+      // CRM-6265: save both text and HTML parts in details (if present)
+      if ($html and $text) {
+        $details = "-ALTERNATIVE ITEM 0-\n$html\n-ALTERNATIVE ITEM 1-\n$text\n-ALTERNATIVE END-\n";
+      }
+      else {
+        $details = $html ? $html : $text;
+      }
 
-    $activityParams = array(
+      $activityParams = array(
         'source_contact_id' => $contactId,
         'activity_type_id' => $activityTypeID,
         'activity_date_time' => date('YmdHis'),
         'subject' => $messageSubject,
         'details' => $details,
-      // FIXME: check for name Completed and get ID from that lookup
+        // FIXME: check for name Completed and get ID from that lookup
         'status_id' => 2,
-    );
+      );
 
-    $activity = CRM_Activity_BAO_Activity::create($activityParams);
+      $activity = CRM_Activity_BAO_Activity::create($activityParams);
 
-    // Compatibility with CiviCRM >= 4.4
-    if($version >= 4.4){
-      $activityContacts = CRM_Core_OptionGroup::values('activity_contacts', FALSE, FALSE, FALSE, NULL, 'name');
-      $targetID = CRM_Utils_Array::key('Activity Targets', $activityContacts);
+      // Compatibility with CiviCRM >= 4.4
+      if ($version >= 4.4) {
+        $activityContacts = CRM_Core_OptionGroup::values('activity_contacts', FALSE, FALSE, FALSE, NULL, 'name');
+        $targetID = CRM_Utils_Array::key('Activity Targets', $activityContacts);
 
-      $activityTargetParams = array(
+        $activityTargetParams = array(
           'activity_id' => $activity->id,
           'contact_id' => $contactId,
           'record_type_id' => $targetID
-      );
-      CRM_Activity_BAO_ActivityContact::create($activityTargetParams);
-    }
-    else{
-      $activityTargetParams = array(
+        );
+        CRM_Activity_BAO_ActivityContact::create($activityTargetParams);
+      }
+      else {
+        $activityTargetParams = array(
           'activity_id' => $activity->id,
           'target_contact_id' => $contactId,
-      );
-      CRM_Activity_BAO_Activity::createActivityTarget($activityTargetParams);
+        );
+        CRM_Activity_BAO_Activity::createActivityTarget($activityTargetParams);
+      }
     }
   }
   
