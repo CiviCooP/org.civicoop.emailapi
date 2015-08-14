@@ -40,7 +40,7 @@
 
         function triggerAlternativeReceiverChange() {
             cj('.crm-section.alternative_receiver_address').addClass('hiddenElement');
-            var val = cj('#alternative_receiver').attr('checked');
+            var val = cj('#alternative_receiver').prop('checked');
             if (val) {
                 cj('.crm-section.alternative_receiver_address').removeClass('hiddenElement');
             }
