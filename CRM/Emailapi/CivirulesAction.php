@@ -38,6 +38,7 @@ class CRM_Emailapi_CivirulesAction extends CRM_CivirulesActions_Generic_Api {
   protected function alterApiParameters($parameters, CRM_Civirules_EventData_EventData $eventData) {
     //this method could be overridden in subclasses to alter parameters to meet certain criteria
     $parameters['contact_id'] = $eventData->getContactId();
+
     return $parameters;
   }
 
@@ -77,10 +78,16 @@ class CRM_Emailapi_CivirulesAction extends CRM_CivirulesActions_Generic_Api {
       $template = $messageTemplates->msg_title;
     }
 
-    return ts('Send e-mail from "%1 (%2)" with template "%3"', array(
+    $to = ts('the contact');
+    if (!empty($params['alternative_receiver_address'])) {
+      $to = $params['alternative_receiver_address'];
+    }
+
+    return ts('Send e-mail from "%1 (%2)" with template "%3" to %4', array(
         1=>$params['from_name'],
         2=>$params['from_email'],
         3=>$template,
+        4 => $to,
     ));
   }
 }

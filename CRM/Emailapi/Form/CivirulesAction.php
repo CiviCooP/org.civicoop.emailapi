@@ -68,6 +68,10 @@ class CRM_Emailapi_Form_CivirulesAction extends CRM_Core_Form {
     $this->add('text', 'from_email', ts('From email'), true);
     $this->addRule("from_email", ts('Email is not valid.'), 'email');
 
+    $this->add('checkbox','alternative_receiver', ts('Send to alternative e-mail address'));
+    $this->add('text', 'alternative_receiver_address', ts('Send to'));
+    $this->addRule("alternative_receiver_address", ts('Email is not valid.'), 'email');
+
     $this->add('select', 'template_id', ts('Message template'), $this->getMessageTemplates(), true);
 
     $this->addButtons(array(
@@ -97,6 +101,10 @@ class CRM_Emailapi_Form_CivirulesAction extends CRM_Core_Form {
     if (!empty($data['template_id'])) {
       $defaultValues['template_id'] = $data['template_id'];
     }
+    if (!empty($data['alternative_receiver_address'])) {
+      $defaultValues['alternative_receiver_address'] = $data['alternative_receiver_address'];
+      $defaultValues['alternative_receiver'] = true;
+    }
     return $defaultValues;
   }
 
@@ -109,6 +117,10 @@ class CRM_Emailapi_Form_CivirulesAction extends CRM_Core_Form {
     $data['from_name'] = $this->_submitValues['from_name'];
     $data['from_email'] = $this->_submitValues['from_email'];
     $data['template_id'] = $this->_submitValues['template_id'];
+    $data['alternative_receiver_address'] = '';
+    if (!empty($this->_submitValues['alternative_receiver_address'])) {
+      $data['alternative_receiver_address'] = $this->_submitValues['alternative_receiver_address'];
+    }
 
     $ruleAction = new CRM_Civirules_BAO_RuleAction();
     $ruleAction->id = $this->ruleActionId;
