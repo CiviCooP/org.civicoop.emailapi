@@ -7,6 +7,7 @@ Parameters for the api are specified below:
 - template_id: ID of the message template which will be used in the API.
 - from_name: **optional** name of the sender (if you provide this value you have also to provice from_email) 
 - from_email: **optional** e-mail of the sender (if you provide this value you have also to provice from_name)
+- alternative_receiver_address: **optional** alternative receiver address of the e-mail. 
 
 *It is not possible to specify your own message through the API.*
 
