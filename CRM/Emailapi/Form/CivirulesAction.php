@@ -23,7 +23,6 @@ class CRM_Emailapi_Form_CivirulesAction extends CRM_Core_Form {
    */
   public function preProcess() {
     $this->ruleActionId = CRM_Utils_Request::retrieve('rule_action_id', 'Integer');
-
     $this->ruleAction = new CRM_Civirules_BAO_RuleAction();
     $this->action = new CRM_Civirules_BAO_Action();
     $this->ruleAction->id = $this->ruleActionId;
@@ -90,7 +89,7 @@ class CRM_Emailapi_Form_CivirulesAction extends CRM_Core_Form {
     $defaultValues = array();
     $defaultValues['rule_action_id'] = $this->ruleActionId;
     if (!empty($this->ruleAction->action_params)) {
-      $data = unserialize($this->ruleCondition->action_params);
+      $data = unserialize($this->ruleAction->action_params);
     }
     if (!empty($data['from_name'])) {
       $defaultValues['from_name'] = $data['from_name'];
