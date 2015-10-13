@@ -31,13 +31,13 @@ class CRM_Emailapi_CivirulesAction extends CRM_CivirulesActions_Generic_Api {
    * Returns an array with parameters used for processing an action
    *
    * @param array $parameters
-   * @param CRM_Civirules_EventData_EventData $eventData
+   * @param CRM_Civirules_TriggerData_TriggerData $rtiggerData
    * @return array
    * @access protected
    */
-  protected function alterApiParameters($parameters, CRM_Civirules_EventData_EventData $eventData) {
+  protected function alterApiParameters($parameters, CRM_Civirules_TriggerData_TriggerData $triggerData) {
     //this method could be overridden in subclasses to alter parameters to meet certain criteria
-    $parameters['contact_id'] = $eventData->getContactId();
+    $parameters['contact_id'] = $triggerData->getContactId();
 
     return $parameters;
   }
