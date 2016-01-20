@@ -38,7 +38,6 @@ function civicrm_api3_email_send($params) {
   }
   $messageTemplates->id = $params['template_id'];
 
-  
   $from = CRM_Core_BAO_Domain::getNameAndEmail();
   $from = "$from[0] <$from[1]>";
   if (isset($params['from_email']) && isset($params['from_name'])) {
@@ -46,16 +45,15 @@ function civicrm_api3_email_send($params) {
   } elseif (isset($params['from_email']) || isset($params['from_name'])) {
     throw new API_Exception('You have to provide both from_name and from_email');
   }
-  
 
   $domain     = CRM_Core_BAO_Domain::getDomain();
   $result     = NULL;
   $hookTokens = array();
-  
+
   if (!$messageTemplates->find(TRUE)) {
     throw new API_Exception('Could not find template with ID: '.$params['template_id']);
   }
-  
+
   $body_text    = $messageTemplates->msg_text;
   $body_html    = $messageTemplates->msg_html;
   $body_subject = $messageTemplates->msg_subject;
@@ -227,9 +225,15 @@ function civicrm_api3_email_send($params) {
         );
         CRM_Activity_BAO_Activity::createActivityTarget($activityTargetParams);
       }
+    } else {
+    	$returnValues[$contactId] = array(
+        'contact_id' => $contactId,
+        'send' => 1,
+        'status_msg' => 'Succesfully send e-mail to ' . ' <' . $email . '> ',
+      );
     }
   }
-  
+
 
   return civicrm_api3_create_success($returnValues, $params, 'Email', 'Send');
   //throw new API_Exception(/*errorMessage*/ 'Everyone knows that the magicword is "sesame"', /*errorCode*/ 1234);
