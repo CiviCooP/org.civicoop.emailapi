@@ -9,8 +9,8 @@
     <email>helpdesk@civicoop.org</email>
   </maintainer>
   <urls>
-    <url desc="Main Extension Page">https://guthub.com/CiviCooP/org.civicoop.emailapi</url>
-    <url desc="documentation">https://guthub.com/CiviCooP/org.civicoop.emailapi/README.md</url>
+    <url desc="Main Extension Page">https://github.com/CiviCooP/org.civicoop.emailapi</url>
+    <url desc="documentation">https://github.com/CiviCooP/org.civicoop.emailapi/README.md</url>
     <url desc="Support">http://civicoop.org</url>
     <url desc="Licensing">http://www.gnu.org/licenses/agpl-3.0.html</url>
   </urls>
