@@ -47,7 +47,7 @@ class CRM_Emailapi_Form_CivirulesAction extends CRM_Core_Form {
 
   protected function getMessageTemplates() {
     $return = array('' => ts('-- please select --'));
-    $dao = CRM_Core_DAO::executeQuery("SELECT * FROM `civicrm_msg_template` WHERE `is_active` = 1 AND `workflow_id` IS NULL");
+    $dao = CRM_Core_DAO::executeQuery("SELECT * FROM `civicrm_msg_template` WHERE `is_active` = 1 AND `workflow_id` IS NULL ORDER BY msg_title");
     while($dao->fetch()) {
       $return[$dao->id] = $dao->msg_title;
     }
