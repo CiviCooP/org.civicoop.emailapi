@@ -30,6 +30,11 @@ function civicrm_api3_email_send($params) {
   $contactIds = explode(",", $params['contact_id']);
   $alternativeEmailAddress = !empty($params['alternative_receiver_address']) ? $params['alternative_receiver_address'] : false;
 
+  $case_id = false;
+  if (isset($params['case_id'])) {
+    $case_id = $params['case_id'];
+  }
+
   // Compatibility with CiviCRM > 4.3
   if($version >= 4.4) {
     $messageTemplates = new CRM_Core_DAO_MessageTemplate();
@@ -224,6 +229,14 @@ function civicrm_api3_email_send($params) {
           'target_contact_id' => $contactId,
         );
         CRM_Activity_BAO_Activity::createActivityTarget($activityTargetParams);
+      }
+
+      if (!empty($case_id)) {
+        $caseActivity = array(
+          'activity_id' => $activity->id,
+          'case_id' => $case_id,
+        );
+        CRM_Case_BAO_Case::processCaseActivity($caseActivity);
       }
     } else {
     	$returnValues[$contactId] = array(

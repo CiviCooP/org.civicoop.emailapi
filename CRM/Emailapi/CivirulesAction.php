@@ -39,6 +39,12 @@ class CRM_Emailapi_CivirulesAction extends CRM_CivirulesActions_Generic_Api {
     //this method could be overridden in subclasses to alter parameters to meet certain criteria
     $parameters['contact_id'] = $triggerData->getContactId();
 
+    $actionParameters = $this->getActionParameters();
+    if (!empty($actionParameters['file_on_case'])) {
+      $case = $triggerData->getEntityData('Case');
+      $parameters['case_id'] = $case['id'];
+    }
+
     return $parameters;
   }
 

@@ -25,6 +25,15 @@
         <div class="content">{$form.alternative_receiver_address.html}</div>
         <div class="clear"></div>
     </div>
+
+    {if ($has_case)}
+        <div class="crm-section">
+            <div class="label">{$form.file_on_case.label}</div>
+            <div class="content">{$form.file_on_case.html}</div>
+            <div class="clear"></div>
+        </div>
+    {/if}
+
 </div>
 <div class="crm-submit-buttons">
     {include file="CRM/common/formButtons.tpl" location="bottom"}
