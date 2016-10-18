@@ -180,71 +180,62 @@ function civicrm_api3_email_send($params) {
       throw new API_Exception('Error sending e-mail to ' . $contact['display_name'] . ' <' . $email . '> ');
     }
 
-    if (!$alternativeEmailAddress) {
-      $returnValues[$contactId] = array(
-        'contact_id' => $contactId,
-        'send' => 1,
-        'status_msg' => 'Succesfully send e-mail to ' . $contact['display_name'] . ' <' . $email . '> ',
-      );
+    //create activity for sending e-mail.
+    $activityTypeID = CRM_Core_OptionGroup::getValue('activity_type', 'Email', 'name');
 
-
-      //create activity for sending e-mail.
-      $activityTypeID = CRM_Core_OptionGroup::getValue('activity_type', 'Email', 'name');
-
-      // CRM-6265: save both text and HTML parts in details (if present)
-      if ($html and $text) {
-        $details = "-ALTERNATIVE ITEM 0-\n$html\n-ALTERNATIVE ITEM 1-\n$text\n-ALTERNATIVE END-\n";
-      }
-      else {
-        $details = $html ? $html : $text;
-      }
-
-      $activityParams = array(
-        'source_contact_id' => $contactId,
-        'activity_type_id' => $activityTypeID,
-        'activity_date_time' => date('YmdHis'),
-        'subject' => $messageSubject,
-        'details' => $details,
-        // FIXME: check for name Completed and get ID from that lookup
-        'status_id' => 2,
-      );
-
-      $activity = CRM_Activity_BAO_Activity::create($activityParams);
-
-      // Compatibility with CiviCRM >= 4.4
-      if ($version >= 4.4) {
-        $activityContacts = CRM_Core_OptionGroup::values('activity_contacts', FALSE, FALSE, FALSE, NULL, 'name');
-        $targetID = CRM_Utils_Array::key('Activity Targets', $activityContacts);
-
-        $activityTargetParams = array(
-          'activity_id' => $activity->id,
-          'contact_id' => $contactId,
-          'record_type_id' => $targetID
-        );
-        CRM_Activity_BAO_ActivityContact::create($activityTargetParams);
-      }
-      else {
-        $activityTargetParams = array(
-          'activity_id' => $activity->id,
-          'target_contact_id' => $contactId,
-        );
-        CRM_Activity_BAO_Activity::createActivityTarget($activityTargetParams);
-      }
-
-      if (!empty($case_id)) {
-        $caseActivity = array(
-          'activity_id' => $activity->id,
-          'case_id' => $case_id,
-        );
-        CRM_Case_BAO_Case::processCaseActivity($caseActivity);
-      }
-    } else {
-    	$returnValues[$contactId] = array(
-        'contact_id' => $contactId,
-        'send' => 1,
-        'status_msg' => 'Succesfully send e-mail to ' . ' <' . $email . '> ',
-      );
+    // CRM-6265: save both text and HTML parts in details (if present)
+    if ($html and $text) {
+      $details = "-ALTERNATIVE ITEM 0-\n$html\n-ALTERNATIVE ITEM 1-\n$text\n-ALTERNATIVE END-\n";
     }
+    else {
+      $details = $html ? $html : $text;
+    }
+
+    $activityParams = array(
+      'source_contact_id' => $contactId,
+      'activity_type_id' => $activityTypeID,
+      'activity_date_time' => date('YmdHis'),
+      'subject' => $messageSubject,
+      'details' => $details,
+      // FIXME: check for name Completed and get ID from that lookup
+      'status_id' => 2,
+    );
+
+    $activity = CRM_Activity_BAO_Activity::create($activityParams);
+
+    // Compatibility with CiviCRM >= 4.4
+    if ($version >= 4.4) {
+      $activityContacts = CRM_Core_OptionGroup::values('activity_contacts', FALSE, FALSE, FALSE, NULL, 'name');
+      $targetID = CRM_Utils_Array::key('Activity Targets', $activityContacts);
+
+      $activityTargetParams = array(
+        'activity_id' => $activity->id,
+        'contact_id' => $contactId,
+        'record_type_id' => $targetID
+      );
+      CRM_Activity_BAO_ActivityContact::create($activityTargetParams);
+    }
+    else {
+      $activityTargetParams = array(
+        'activity_id' => $activity->id,
+        'target_contact_id' => $contactId,
+      );
+      CRM_Activity_BAO_Activity::createActivityTarget($activityTargetParams);
+    }
+
+    if (!empty($case_id)) {
+      $caseActivity = array(
+        'activity_id' => $activity->id,
+        'case_id' => $case_id,
+      );
+      CRM_Case_BAO_Case::processCaseActivity($caseActivity);
+    }
+
+    $returnValues[$contactId] = array(
+      'contact_id' => $contactId,
+      'send' => 1,
+      'status_msg' => 'Succesfully send e-mail to ' . ' <' . $email . '> ',
+    );
   }
 
 
