@@ -100,8 +100,9 @@ function civicrm_api3_email_send($params) {
         $returnProperties[$value] = 1;
       }
     }
-    list($details) = CRM_Utils_Token::getTokenDetails(array($contactId), $returnProperties, false, false, null, $tokens);
-    $contact = reset($details);
+    if ($case_id) {
+      $contact['case.id'] = $case_id;
+    }
 
     if ($alternativeEmailAddress) {
       /**
@@ -125,6 +126,7 @@ function civicrm_api3_email_send($params) {
       $toName = $contact['display_name'];
     }
 
+    CRM_Utils_Hook::tokenValues($contact, $contact['contact_id'], NULL, $tokens);
     // call token hook
     $hookTokens = array();
     CRM_Utils_Hook::tokens($hookTokens);
