@@ -112,7 +112,7 @@ function _emailapi_is_civirules_installed() {
   try {
     $extensions = civicrm_api3('Extension', 'get');
     foreach($extensions['values'] as $ext) {
-      if ($ext['key'] == 'org.civicoop.civirules' &&$ext['status'] == 'installed') {
+      if ($ext['key'] == 'org.civicoop.civirules' && ($ext['status'] == 'installed' || $ext['status'] == 'disabled')) {
         $installed = true;
       }
     }
