@@ -146,10 +146,12 @@ function civicrm_api3_email_send($params) {
     }
     $html = $body_html;
     $text = $body_text;
-
-    $smarty = CRM_Core_Smarty::singleton();
-    foreach ($type as $elem) {
-      $$elem = $smarty->fetch("string:{$$elem}");
+    
+    if (defined('CIVICRM_MAIL_SMARTY') && CIVICRM_MAIL_SMARTY) {
+      $smarty = CRM_Core_Smarty::singleton();
+      foreach ($type as $elem) {
+        $$elem = $smarty->fetch("string:{$$elem}");
+      }
     }
 
     // do replacements in message subject
@@ -158,8 +160,10 @@ function civicrm_api3_email_send($params) {
     $messageSubject = CRM_Utils_Token::replaceComponentTokens($messageSubject, $contact, $tokens, true);
     $messageSubject = CRM_Utils_Token::replaceHookTokens($messageSubject, $contact, $categories, true);
 
-    $messageSubject = $smarty->fetch("string:{$messageSubject}");
-
+    if (defined('CIVICRM_MAIL_SMARTY') && CIVICRM_MAIL_SMARTY) {
+      $messageSubject = $smarty->fetch("string:{$messageSubject}");
+    }
+    
     // set up the parameters for CRM_Utils_Mail::send
     $mailParams = array(
         'groupName' => 'E-mail from API',
