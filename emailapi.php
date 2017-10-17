@@ -108,17 +108,18 @@ function emailapi_civicrm_alterSettingsFolders(&$metaDataFolders = NULL) {
 }
 
 function _emailapi_is_civirules_installed() {
-  $installed = false;
+  $installed = FALSE;
   try {
-    $extensions = civicrm_api3('Extension', 'get');
+    $extensions = civicrm_api3('Extension', 'get', array('options' => array('limit' => 0)));
     foreach($extensions['values'] as $ext) {
       if ($ext['key'] == 'org.civicoop.civirules' && ($ext['status'] == 'installed' || $ext['status'] == 'disabled')) {
-        $installed = true;
+        $installed = TRUE;
       }
     }
     return $installed;
-  } catch (Exception $e) {
-    return false;
   }
-  return false;
+  catch (Exception $e) {
+    return FALSE;
+  }
+  return FALSE;
 }
