@@ -171,6 +171,7 @@ function civicrm_api3_email_send($params) {
         'toName' => $toName,
         'toEmail' => $email,
         'subject' => $messageSubject,
+        'messageTemplateID' => $messageTemplates->id,
     );
 
     if (!$html || $contact['preferred_mail_format'] == 'Text' || $contact['preferred_mail_format'] == 'Both') {
