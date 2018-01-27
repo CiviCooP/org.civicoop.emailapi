@@ -8,6 +8,7 @@ Parameters for the api are specified below:
 - from_name: **optional** name of the sender (if you provide this value you have also to provide from_email) 
 - from_email: **optional** e-mail of the sender (if you provide this value you have also to provide from_name)
 - alternative_receiver_address: **optional** alternative receiver address of the e-mail. 
+- case_id: **optional** adds the e-mail to the case identified by this ID.
 
 *It is not possible to specify your own message through the API.*
 
