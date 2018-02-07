@@ -9,8 +9,32 @@
  * @see http://wiki.civicrm.org/confluence/display/CRM/API+Architecture+Standards
  */
 function _civicrm_api3_email_send_spec(&$spec) {
-  $spec['contact_id']['api.required'] = 1;
-  $spec['template_id']['api.required'] = 1;
+  $spec['contact_id'] = array(
+  	'title' => 'Contact ID',
+    'type' => CRM_Utils_Type::T_INT,
+    'api.required' => 1,
+	);
+  $spec['template_id'] = array(
+  	'title' => 'Template ID',
+    'type' => CRM_Utils_Type::T_INT,
+    'api.required' => 1,
+	);
+	$spec['case_id'] = array(
+		'title' => 'Case ID',
+    'type' => CRM_Utils_Type::T_INT,
+	);
+	$spec['alternative_receiver_address'] = array(
+		'title' => 'Alternative receiver address',
+    'type' => CRM_Utils_Type::T_STRING,
+	);
+	$spec['cc'] = array(
+		'title' => 'Cc',
+    'type' => CRM_Utils_Type::T_STRING,
+	);
+	$spec['bcc'] = array(
+		'title' => 'Bcc',
+    'type' => CRM_Utils_Type::T_STRING,
+	);
 }
 
 /**
@@ -22,7 +46,7 @@ function _civicrm_api3_email_send_spec(&$spec) {
  * @see civicrm_api3_create_error
  * @throws API_Exception
  */
-function civicrm_api3_email_send($params) {
+function civicrm_api3_email_send($params) {	
   $version = CRM_Core_BAO_Domain::version();
   if (!preg_match('/[0-9]+(,[0-9]+)*/i', $params['contact_id'])) {
     throw new API_Exception('Parameter contact_id must be a unique id or a list of ids separated by comma');
@@ -68,14 +92,14 @@ function civicrm_api3_email_send($params) {
 
   $returnValues = array();
   foreach($contactIds as $contactId) {
-    $params = array(array('contact_id', '=', $contactId, 0, 0));
-    list($contact, $_) = CRM_Contact_BAO_Query::apiQuery($params);
+    $contact_params = array(array('contact_id', '=', $contactId, 0, 0));
+    list($contact, $_) = CRM_Contact_BAO_Query::apiQuery($contact_params);
 
     //CRM-4524
     $contact = reset($contact);
 
     if (!$contact || is_a($contact, 'CRM_Core_Error')) {
-      throw new API_Exception('Could not find contact with ID: ' . $params['contact_id']);
+      throw new API_Exception('Could not find contact with ID: ' . $contact_params['contact_id']);
     }
 
     //CRM-5734
@@ -181,7 +205,12 @@ function civicrm_api3_email_send($params) {
     if ($html && ($contact['preferred_mail_format'] == 'HTML' || $contact['preferred_mail_format'] == 'Both')) {
       $mailParams['html'] = $html;
     }
-
+		if (isset($params['cc']) && !empty($params['cc'])) {
+			$mailParams['cc'] = $params['cc'];
+		}
+		if (isset($params['bcc']) && !empty($params['bcc'])) {
+			$mailParams['bcc'] = $params['bcc'];
+		}
     $result = CRM_Utils_Mail::send($mailParams);
     if (!$result) {
       throw new API_Exception('Error sending e-mail to ' . $contact['display_name'] . ' <' . $email . '> ');

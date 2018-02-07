@@ -44,6 +44,13 @@ class CRM_Emailapi_CivirulesAction extends CRM_CivirulesActions_Generic_Api {
       $case = $triggerData->getEntityData('Case');
       $parameters['case_id'] = $case['id'];
     }
+		
+		if (!empty($actionParameters['cc'])) {
+      $parameters['cc'] = $actionParameters['cc'];
+    }
+		if (!empty($actionParameters['bcc'])) {
+      $parameters['bcc'] = $actionParameters['bcc'];
+    }
 
     return $parameters;
   }
@@ -88,12 +95,21 @@ class CRM_Emailapi_CivirulesAction extends CRM_CivirulesActions_Generic_Api {
     if (!empty($params['alternative_receiver_address'])) {
       $to = $params['alternative_receiver_address'];
     }
+		
+		if (!empty($params['cc'])) {
+      $cc = ts(' and cc to %1', array(1=>$params['cc']));
+    }
+		if (!empty($params['bcc'])) {
+      $bcc = ts(' and bcc to %1', array(1=>$params['bcc']));
+    }
 
-    return ts('Send e-mail from "%1 (%2)" with template "%3" to %4', array(
+    return ts('Send e-mail from "%1 (%2)" with template "%3" to %4 %5 %6', array(
         1=>$params['from_name'],
         2=>$params['from_email'],
         3=>$template,
         4 => $to,
+        5 => $cc,
+        6 => $bcc
     ));
   }
 }

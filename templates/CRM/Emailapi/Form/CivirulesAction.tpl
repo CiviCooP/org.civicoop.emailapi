@@ -25,6 +25,16 @@
         <div class="content">{$form.alternative_receiver_address.html}</div>
         <div class="clear"></div>
     </div>
+    <div class="crm-section cc">
+        <div class="label">{$form.cc.label}</div>
+        <div class="content">{$form.cc.html}</div>
+        <div class="clear"></div>
+    </div>
+    <div class="crm-section bcc">
+        <div class="label">{$form.bcc.label}</div>
+        <div class="content">{$form.bcc.html}</div>
+        <div class="clear"></div>
+    </div>
 
     {if ($has_case)}
         <div class="crm-section">

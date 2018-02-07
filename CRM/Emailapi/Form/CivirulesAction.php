@@ -89,6 +89,12 @@ class CRM_Emailapi_Form_CivirulesAction extends CRM_Core_Form {
     $this->add('checkbox','alternative_receiver', ts('Send to alternative e-mail address'));
     $this->add('text', 'alternative_receiver_address', ts('Send to'));
     $this->addRule("alternative_receiver_address", ts('Email is not valid.'), 'email');
+		
+		$this->add('text', 'cc', ts('Cc to'));
+    $this->addRule("cc", ts('Email is not valid.'), 'email');
+		
+		$this->add('text', 'bcc', ts('Bcc to'));
+    $this->addRule("bcc", ts('Email is not valid.'), 'email');
 
     $this->add('select', 'template_id', ts('Message template'), $this->getMessageTemplates(), true);
 
@@ -128,6 +134,12 @@ class CRM_Emailapi_Form_CivirulesAction extends CRM_Core_Form {
       $defaultValues['alternative_receiver_address'] = $data['alternative_receiver_address'];
       $defaultValues['alternative_receiver'] = true;
     }
+		if (!empty($data['cc'])) {
+      $defaultValues['cc'] = $data['cc'];
+    }
+		if (!empty($data['bcc'])) {
+      $defaultValues['bcc'] = $data['bcc'];
+    }
     $defaultValues['file_on_case'] = false;
     if (!empty($data['file_on_case'])) {
       $defaultValues['file_on_case'] = true;
@@ -147,6 +159,14 @@ class CRM_Emailapi_Form_CivirulesAction extends CRM_Core_Form {
     $data['alternative_receiver_address'] = '';
     if (!empty($this->_submitValues['alternative_receiver_address'])) {
       $data['alternative_receiver_address'] = $this->_submitValues['alternative_receiver_address'];
+    }
+		$data['cc'] = '';
+    if (!empty($this->_submitValues['cc'])) {
+      $data['cc'] = $this->_submitValues['cc'];
+    }
+		$data['bcc'] = '';
+    if (!empty($this->_submitValues['bcc'])) {
+      $data['bcc'] = $this->_submitValues['bcc'];
     }
     $data['file_on_case'] = false;
     if (!empty($this->_submitValues['file_on_case'])) {
