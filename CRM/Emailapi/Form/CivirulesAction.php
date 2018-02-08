@@ -76,6 +76,7 @@ class CRM_Emailapi_Form_CivirulesAction extends CRM_Core_Form {
   function buildQuickForm() {
 
     $this->setFormTitle();
+		$this->registerRule('emailList', 'callback', 'emailList', 'CRM_Utils_Rule');
 
     $this->add('hidden', 'rule_action_id');
 
@@ -91,10 +92,10 @@ class CRM_Emailapi_Form_CivirulesAction extends CRM_Core_Form {
     $this->addRule("alternative_receiver_address", ts('Email is not valid.'), 'email');
 		
 		$this->add('text', 'cc', ts('Cc to'));
-    $this->addRule("cc", ts('Email is not valid.'), 'email');
+    $this->addRule("cc", ts('Email is not valid.'), 'emailList');
 		
 		$this->add('text', 'bcc', ts('Bcc to'));
-    $this->addRule("bcc", ts('Email is not valid.'), 'email');
+    $this->addRule("bcc", ts('Email is not valid.'), 'emailList');
 
     $this->add('select', 'template_id', ts('Message template'), $this->getMessageTemplates(), true);
 
