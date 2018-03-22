@@ -5,5 +5,6 @@
     <page_callback>CRM_Emailapi_Form_CivirulesAction</page_callback>
     <title>E-mail api (civirules action)</title>
     <access_arguments>access CiviCRM</access_arguments>
+    <access_arguments>administer CiviCRM</access_arguments>
   </item>
 </menu>
