@@ -180,16 +180,15 @@ function civicrm_api3_email_send($params) {
 						echo $e->getMessage(); exit();
 					}	
 				}
-        CRM_Utils_Token::replaceGreetingTokens($$bodyType, NULL, $contact['contact_id']);
         $$bodyType = CRM_Utils_Token::replaceDomainTokens($$bodyType, $domain, true, $tokens, true);
+				$$bodyType = CRM_Utils_Token::replaceHookTokens($$bodyType, $contact, $categories, true);
+        CRM_Utils_Token::replaceGreetingTokens($$bodyType, $contact, $contact['contact_id']);
         $$bodyType = CRM_Utils_Token::replaceContactTokens($$bodyType, $contact, false, $tokens, false, true);
-        $$bodyType = CRM_Utils_Token::replaceComponentTokens($$bodyType, $contact, $tokens, true);
-        $$bodyType = CRM_Utils_Token::replaceHookTokens($$bodyType, $contact, $categories, true);
+        $$bodyType = CRM_Utils_Token::replaceComponentTokens($$bodyType, $contact, $tokens, true); 
       }
     }
     $html = $body_html;
     $text = $body_text;
-    var_dump($html); exit();
     if (defined('CIVICRM_MAIL_SMARTY') && CIVICRM_MAIL_SMARTY) {
       $smarty = CRM_Core_Smarty::singleton();
       foreach ($type as $elem) {
