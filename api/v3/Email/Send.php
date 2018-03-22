@@ -23,6 +23,10 @@ function _civicrm_api3_email_send_spec(&$spec) {
 		'title' => 'Case ID',
     'type' => CRM_Utils_Type::T_INT,
 	);
+	$spec['contribution_id'] = array(
+		'title' => 'Contribution ID',
+    'type' => CRM_Utils_Type::T_INT,
+	);
 	$spec['alternative_receiver_address'] = array(
 		'title' => 'Alternative receiver address',
     'type' => CRM_Utils_Type::T_STRING,
@@ -58,6 +62,10 @@ function civicrm_api3_email_send($params) {
   if (isset($params['case_id'])) {
     $case_id = $params['case_id'];
   }
+	$contribution_id = false;
+	if (isset($params['contribution_id'])) {
+		$contribution_id = $params['contribution_id'];
+	}
 
   // Compatibility with CiviCRM > 4.3
   if($version >= 4.4) {
@@ -127,6 +135,9 @@ function civicrm_api3_email_send($params) {
     if ($case_id) {
       $contact['case.id'] = $case_id;
     }
+		if ($contribution_id) {
+			$contact['contribution_id'] = $contribution_id;
+		}
 
     if ($alternativeEmailAddress) {
       /**
@@ -161,6 +172,14 @@ function civicrm_api3_email_send($params) {
     foreach ($type as $key => $value) {
       $bodyType = "body_{$value}";
       if ($$bodyType) {
+      	if ($contribution_id) {
+					try {
+						$contribution = civicrm_api3('Contribution', 'getsingle', array('id' => $contribution_id));
+						$$bodyType = CRM_Utils_Token::replaceContributionTokens($$bodyType, $contribution, true, $tokens);
+					} catch (Exception $e) {
+						echo $e->getMessage(); exit();
+					}	
+				}
         CRM_Utils_Token::replaceGreetingTokens($$bodyType, NULL, $contact['contact_id']);
         $$bodyType = CRM_Utils_Token::replaceDomainTokens($$bodyType, $domain, true, $tokens, true);
         $$bodyType = CRM_Utils_Token::replaceContactTokens($$bodyType, $contact, false, $tokens, false, true);
@@ -170,7 +189,7 @@ function civicrm_api3_email_send($params) {
     }
     $html = $body_html;
     $text = $body_text;
-    
+    var_dump($html); exit();
     if (defined('CIVICRM_MAIL_SMARTY') && CIVICRM_MAIL_SMARTY) {
       $smarty = CRM_Core_Smarty::singleton();
       foreach ($type as $elem) {
