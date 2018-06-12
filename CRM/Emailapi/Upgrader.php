@@ -9,11 +9,27 @@ class CRM_Emailapi_Upgrader extends CRM_Emailapi_Upgrader_Base {
   // upgrade tasks. They are executed in order (like Drupal's hook_update_N).
 
   /**
-   * Example: Run an external SQL script when the module is installed
-   *
+   * Install CiviRule Action Send E-mail
+   */
   public function install() {
-    $this->executeSqlFile('sql/myinstall.sql');
+    $this->executeSqlFile('sql/insertSendEmailAction.sql');
   }
+
+  /**
+   * remove managed entity
+   */
+  public function upgrade_1001() {
+  $this->ctx->log->info('Applying update 1001 (remove managed entity');
+  if (CRM_Core_DAO::checkTableExists('civicrm_managed')) {
+    $query = 'DELETE FROM civicrm_managed WHERE module = %1 AND entity_type = %2';
+    CRM_Core_DAO::executeQuery($query, array(
+      1 => array('org.civicoop.emailapi', 'String'),
+      2 => array('CiviRuleAction', 'String'),
+    ));
+  }
+  return TRUE;
+  } // */
+
 
   /**
    * Example: Run an external SQL script when the module is uninstalled

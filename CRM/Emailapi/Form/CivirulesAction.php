@@ -33,9 +33,9 @@ class CRM_Emailapi_Form_CivirulesAction extends CRM_Core_Form {
     $this->action = new CRM_Civirules_BAO_Action();
     $this->rule = new CRM_Civirules_BAO_Rule();
     $this->ruleAction->id = $this->ruleActionId;
-    if ($this->ruleAction->find(true)) {
+    if ($this->ruleAction->find(TRUE)) {
       $this->action->id = $this->ruleAction->action_id;
-      if (!$this->action->find(true)) {
+      if (!$this->action->find(TRUE)) {
         throw new Exception('CiviRules Could not find action with id '.$this->ruleAction->action_id);
       }
     } else {
@@ -43,22 +43,22 @@ class CRM_Emailapi_Form_CivirulesAction extends CRM_Core_Form {
     }
 
     $this->rule->id = $this->ruleAction->rule_id;
-    if (!$this->rule->find(true)) {
+    if (!$this->rule->find(TRUE)) {
       throw new Exception('Civirules could not find rule');
     }
 
-    $this->triggerClass = CRM_Civirules_BAO_Trigger::getTriggerObjectByTriggerId($this->rule->trigger_id, true);
+    $this->triggerClass = CRM_Civirules_BAO_Trigger::getTriggerObjectByTriggerId($this->rule->trigger_id, TRUE);
     $this->triggerClass->setTriggerId($this->rule->trigger_id);
     $providedEntities = $this->triggerClass->getProvidedEntities();
     if (isset($providedEntities['Case'])) {
-      $this->hasCase = true;
+      $this->hasCase = TRUE;
     }
 
     parent::preProcess();
   }
 
   /**
-   * Method to get groups
+   * Method to get message templates
    *
    * @return array
    * @access protected
@@ -66,9 +66,42 @@ class CRM_Emailapi_Form_CivirulesAction extends CRM_Core_Form {
 
   protected function getMessageTemplates() {
     $return = array('' => ts('-- please select --'));
-    $dao = CRM_Core_DAO::executeQuery("SELECT * FROM `civicrm_msg_template` WHERE `is_active` = 1 AND `workflow_id` IS NULL ORDER BY msg_title");
-    while($dao->fetch()) {
-      $return[$dao->id] = $dao->msg_title;
+    try {
+      $messageTemplates = civicrm_api3('MessageTemplate', 'get', array(
+        'return' => array("id", "msg_title"),
+        'is_active' => 1,
+        'workflow_id' => array('IS NULL' => 1),
+        'options' => array('limit' => 0, 'sort' => "msg_title"),
+      ));
+      foreach ($messageTemplates['values'] as $templateId => $template) {
+        $return[$templateId] = $template['msg_title'];
+      }
+    }
+    catch (CiviCRM_API3_Exception $ex) {
+    }
+    return $return;
+  }
+
+  /**
+   * Method to get location types
+   *
+   * @return array
+   * @access protected
+   */
+
+  protected function getLocationTypes() {
+    $return = array('' => ts('-- please select --'));
+    try {
+      $locationTypes = civicrm_api3('LocationType', 'get', array(
+        'return' => array("id", "display_name"),
+        'is_active' => 1,
+        'options' => array('limit' => 0, 'sort' => "display_name"),
+      ));
+      foreach ($locationTypes['values'] as $locationTypeId => $locationType) {
+        $return[$locationTypeId] = $locationType['display_name'];
+      }
+    }
+    catch (CiviCRM_API3_Exception $ex) {
     }
     return $return;
   }
@@ -77,33 +110,24 @@ class CRM_Emailapi_Form_CivirulesAction extends CRM_Core_Form {
 
     $this->setFormTitle();
 		$this->registerRule('emailList', 'callback', 'emailList', 'CRM_Utils_Rule');
-
     $this->add('hidden', 'rule_action_id');
-
-
-
-    $this->add('text', 'from_name', ts('From name'), true);
-
-    $this->add('text', 'from_email', ts('From email'), true);
+    $this->add('text', 'from_name', ts('From name'), TRUE);
+    $this->add('text', 'from_email', ts('From email'), TRUE);
     $this->addRule("from_email", ts('Email is not valid.'), 'email');
-
     $this->add('checkbox','alternative_receiver', ts('Send to alternative e-mail address'));
     $this->add('text', 'alternative_receiver_address', ts('Send to'));
     $this->addRule("alternative_receiver_address", ts('Email is not valid.'), 'email');
-		
 		$this->add('text', 'cc', ts('Cc to'));
     $this->addRule("cc", ts('Email is not valid.'), 'emailList');
-		
 		$this->add('text', 'bcc', ts('Bcc to'));
     $this->addRule("bcc", ts('Email is not valid.'), 'emailList');
-
-    $this->add('select', 'template_id', ts('Message template'), $this->getMessageTemplates(), true);
-
+    $this->add('select', 'template_id', ts('Message Template'), $this->getMessageTemplates(), TRUE);
+    $this->add('select', 'location_type_id', ts('Location Type (if you do not want primary e-mail address)'), $this->getLocationTypes(), FALSE);
     if ($this->hasCase) {
       $this->add('checkbox','file_on_case', ts('File e-mail on case'));
     }
     $this->assign('has_case', $this->hasCase);
-
+    // add buttons
     $this->addButtons(array(
       array('type' => 'next', 'name' => ts('Save'), 'isDefault' => TRUE,),
       array('type' => 'cancel', 'name' => ts('Cancel'))));
@@ -131,9 +155,12 @@ class CRM_Emailapi_Form_CivirulesAction extends CRM_Core_Form {
     if (!empty($data['template_id'])) {
       $defaultValues['template_id'] = $data['template_id'];
     }
+    if (!empty($data['location_type_id'])) {
+      $defaultValues['location_type_id'] = $data['location_type_id'];
+    }
     if (!empty($data['alternative_receiver_address'])) {
       $defaultValues['alternative_receiver_address'] = $data['alternative_receiver_address'];
-      $defaultValues['alternative_receiver'] = true;
+      $defaultValues['alternative_receiver'] = TRUE;
     }
 		if (!empty($data['cc'])) {
       $defaultValues['cc'] = $data['cc'];
@@ -141,9 +168,9 @@ class CRM_Emailapi_Form_CivirulesAction extends CRM_Core_Form {
 		if (!empty($data['bcc'])) {
       $defaultValues['bcc'] = $data['bcc'];
     }
-    $defaultValues['file_on_case'] = false;
+    $defaultValues['file_on_case'] = FALSE;
     if (!empty($data['file_on_case'])) {
-      $defaultValues['file_on_case'] = true;
+      $defaultValues['file_on_case'] = TRUE;
     }
     return $defaultValues;
   }
@@ -157,9 +184,15 @@ class CRM_Emailapi_Form_CivirulesAction extends CRM_Core_Form {
     $data['from_name'] = $this->_submitValues['from_name'];
     $data['from_email'] = $this->_submitValues['from_email'];
     $data['template_id'] = $this->_submitValues['template_id'];
-    $data['alternative_receiver_address'] = '';
-    if (!empty($this->_submitValues['alternative_receiver_address'])) {
-      $data['alternative_receiver_address'] = $this->_submitValues['alternative_receiver_address'];
+    $data['location_type_id'] = $this->_submitValues['location_type_id'];
+    if (!empty($this->_submitValues['location_type_id'])) {
+      $data['alternative_receiver_address'] = '';
+    }
+    else {
+      $data['alternative_receiver_address'] = '';
+      if (!empty($this->_submitValues['alternative_receiver_address'])) {
+        $data['alternative_receiver_address'] = $this->_submitValues['alternative_receiver_address'];
+      }
     }
 		$data['cc'] = '';
     if (!empty($this->_submitValues['cc'])) {
@@ -169,9 +202,9 @@ class CRM_Emailapi_Form_CivirulesAction extends CRM_Core_Form {
     if (!empty($this->_submitValues['bcc'])) {
       $data['bcc'] = $this->_submitValues['bcc'];
     }
-    $data['file_on_case'] = false;
+    $data['file_on_case'] = FALSE;
     if (!empty($this->_submitValues['file_on_case'])) {
-      $data['file_on_case'] = true;
+      $data['file_on_case'] = TRUE;
     }
 
     $ruleAction = new CRM_Civirules_BAO_RuleAction();
