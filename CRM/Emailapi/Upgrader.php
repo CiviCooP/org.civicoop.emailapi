@@ -26,9 +26,9 @@ class CRM_Emailapi_Upgrader extends CRM_Emailapi_Upgrader_Base {
       1 => array('org.civicoop.emailapi', 'String'),
       2 => array('CiviRuleAction', 'String'),
     ));
-  }
+    }
   return TRUE;
-  } // */
+  }
 
 
   /**
