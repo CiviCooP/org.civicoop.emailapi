@@ -111,11 +111,11 @@ class CRM_Emailapi_Form_CivirulesAction extends CRM_Core_Form {
     $this->setFormTitle();
 		$this->registerRule('emailList', 'callback', 'emailList', 'CRM_Utils_Rule');
     $this->add('hidden', 'rule_action_id');
-    $this->add('text', 'from_name', ts('From name'), TRUE);
-    $this->add('text', 'from_email', ts('From email'), TRUE);
+    $this->add('text', 'from_name', ts('From Name'), TRUE);
+    $this->add('text', 'from_email', ts('From Email'), TRUE);
     $this->addRule("from_email", ts('Email is not valid.'), 'email');
-    $this->add('checkbox','alternative_receiver', ts('Send to alternative e-mail address'));
-    $this->add('text', 'alternative_receiver_address', ts('Send to'));
+    $this->add('checkbox','alternative_receiver', ts('Send to Alternative Email Address'));
+    $this->add('text', 'alternative_receiver_address', ts('Alternative Email Address'));
     $this->addRule("alternative_receiver_address", ts('Email is not valid.'), 'email');
 		$this->add('text', 'cc', ts('Cc to'));
     $this->addRule("cc", ts('Email is not valid.'), 'emailList');
@@ -124,7 +124,7 @@ class CRM_Emailapi_Form_CivirulesAction extends CRM_Core_Form {
     $this->add('select', 'template_id', ts('Message Template'), $this->getMessageTemplates(), TRUE);
     $this->add('select', 'location_type_id', ts('Location Type (if you do not want primary e-mail address)'), $this->getLocationTypes(), FALSE);
     if ($this->hasCase) {
-      $this->add('checkbox','file_on_case', ts('File e-mail on case'));
+      $this->add('checkbox','file_on_case', ts('File Email on Case'));
     }
     $this->assign('has_case', $this->hasCase);
     // add buttons
