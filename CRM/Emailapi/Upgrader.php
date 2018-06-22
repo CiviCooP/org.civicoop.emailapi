@@ -12,7 +12,10 @@ class CRM_Emailapi_Upgrader extends CRM_Emailapi_Upgrader_Base {
    * Install CiviRule Action Send E-mail
    */
   public function install() {
-    $this->executeSqlFile('sql/insertSendEmailAction.sql');
+    if(civicrm_api3('Extension', 'get', ['key' => 'civirules', 'status' => 'installed'])['count']){
+      $this->executeSqlFile('sql/insertSendEmailAction.sql');
+    }
+
   }
 
   /**
@@ -34,11 +37,13 @@ class CRM_Emailapi_Upgrader extends CRM_Emailapi_Upgrader_Base {
    * re-add send email action if required
    */
   public function upgrade_1002() {
-  $this->ctx->log->info('Applying update 1002');
-    $select = "SELECT COUNT(*) FROM civirule_action WHERE class_name = %1";
-    $count = CRM_Core_DAO::singleValueQuery($select, array(1 => array('CRM_Emailapi_CivirulesAction', 'String')));
-    if ($count == 0) {
-      $this->executeSqlFile('sql/insertSendEmailAction.sql');
+    if(civicrm_api3('Extension', 'get', ['key' => 'civirules', 'status' => 'installed'])['count']){
+      $this->ctx->log->info('Applying update 1002');
+      $select = "SELECT COUNT(*) FROM civirule_action WHERE class_name = %1";
+      $count = CRM_Core_DAO::singleValueQuery($select, array(1 => array('CRM_Emailapi_CivirulesAction', 'String')));
+      if ($count == 0) {
+        $this->executeSqlFile('sql/insertSendEmailAction.sql');
+      }
     }
   return TRUE;
   }
