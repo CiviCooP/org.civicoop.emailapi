@@ -83,6 +83,20 @@ function emailapi_civicrm_upgrade($op, CRM_Queue_Queue $queue = NULL) {
  */
 function emailapi_civicrm_managed(&$entities) {
   _emailapi_civix_civicrm_managed($entities);
+
+  if (_emailapi_is_civirules_installed()) {
+    $select = "SELECT COUNT(*) FROM civirule_action WHERE `name` = 'emailapi_send'";
+    $count = CRM_Core_DAO::singleValueQuery($select);
+    if ($count == 0) {
+      CRM_Core_DAO::executeQuery("INSERT INTO civirule_action (name, label, class_name, is_active) VALUES('emailapi_send', 'Send E-mail', 'CRM_Emailapi_CivirulesAction_Send', 1);");
+    }
+
+    $select = "SELECT COUNT(*) FROM civirule_action WHERE `name` = 'emailapi_send_relationship'";
+    $count = CRM_Core_DAO::singleValueQuery($select);
+    if ($count == 0) {
+      CRM_Core_DAO::executeQuery("INSERT INTO civirule_action (name, label, class_name, is_active) VALUES('emailapi_send_relationship', 'Send E-mail to a related contact', 'CRM_Emailapi_CivirulesAction_SendToRelatedContact', 1);");
+    }
+  }
 }
 
 /**
@@ -108,18 +122,10 @@ function emailapi_civicrm_alterSettingsFolders(&$metaDataFolders = NULL) {
 }
 
 function _emailapi_is_civirules_installed() {
-  $installed = FALSE;
-  try {
-    $extensions = civicrm_api3('Extension', 'get', array('options' => array('limit' => 0)));
-    foreach($extensions['values'] as $ext) {
-      if ($ext['key'] == 'org.civicoop.civirules' && ($ext['status'] == 'installed' || $ext['status'] == 'disabled')) {
-        $installed = TRUE;
-      }
-    }
-    return $installed;
+  if (civicrm_api3('Extension', 'get', ['key' => 'civirules', 'status' => 'installed'])['count']) {
+    return true;
+  } elseif (civicrm_api3('Extension', 'get', ['key' => 'org.civicoop.civirules', 'status' => 'installed'])['count']) {
+    return true;
   }
-  catch (Exception $e) {
-    return FALSE;
-  }
-  return FALSE;
+  return false;
 }

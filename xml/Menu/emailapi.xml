@@ -2,7 +2,14 @@
 <menu>
   <item>
     <path>civicrm/civirules/actions/emailapi</path>
-    <page_callback>CRM_Emailapi_Form_CivirulesAction</page_callback>
+    <page_callback>CRM_Emailapi_Form_CivirulesAction_Send</page_callback>
+    <title>E-mail api (civirules action)</title>
+    <access_arguments>access CiviCRM</access_arguments>
+    <access_arguments>administer CiviCRM</access_arguments>
+  </item>
+  <item>
+    <path>civicrm/civirules/actions/emailapi_relatedcontact</path>
+    <page_callback>CRM_Emailapi_Form_CivirulesAction_SendToRelatedContact</page_callback>
     <title>E-mail api (civirules action)</title>
     <access_arguments>access CiviCRM</access_arguments>
     <access_arguments>administer CiviCRM</access_arguments>

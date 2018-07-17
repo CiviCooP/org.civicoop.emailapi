@@ -45,7 +45,18 @@ class CRM_Emailapi_Upgrader extends CRM_Emailapi_Upgrader_Base {
         $this->executeSqlFile('sql/insertSendEmailAction.sql');
       }
     }
-  return TRUE;
+    return TRUE;
+  }
+
+  /**
+   * update class name of the send e-mail action and add the send e-mail to related contact
+   */
+  public function upgrade_1003() {
+    CRM_Core_DAO::executeQuery("UPDATE civirule_action SET class_name = 'CRM_Emailapi_CivirulesAction_Send' WHERE `name` = 'emailapi_send'");
+    CRM_Core_DAO::executeQuery("INSERT INTO civirule_action (name, label, class_name, is_active)
+      VALUES('emailapi_send_relationship', 'Send E-mail to a related contact', 'CRM_Emailapi_CivirulesAction_SendToRelatedContact', 1);"
+    );
+    return true;
   }
 
   /**
