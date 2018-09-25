@@ -48,7 +48,6 @@
     <div class="content" id="location_note">{ts}Note: primary e-mailaddress will be used if location type e-mailaddress not found{/ts}</div>
     <div class="clear"></div>
   </div>
-  </div>
   <div class="crm-section cc">
     <div class="label">{$form.cc.label}</div>
     <div class="content">{$form.cc.html}</div>
