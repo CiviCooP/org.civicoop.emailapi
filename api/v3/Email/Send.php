@@ -152,7 +152,7 @@ function civicrm_api3_email_send($params) {
       /**
        * Contact is decaused or has opted out from mailings so do not send the e-mail
        */
-      throw new API_Exception('Suppressed sending e-mail to: ' . $contact['display_name']);
+      continue;
     } else {
       /**
        * Send e-mail to the contact
