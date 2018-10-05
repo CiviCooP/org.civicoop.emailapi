@@ -117,6 +117,7 @@ function civicrm_api3_email_send($params) {
         CRM_Utils_Token::getTokens($body_html),
         CRM_Utils_Token::getTokens($body_subject));
 
+    list($details) = CRM_Utils_Token::getTokenDetails($contactIds, $returnProperties, false, false, null, $tokens);
     // get replacement text for these tokens
     $returnProperties = array(
         'sort_name' => 1,
@@ -161,12 +162,6 @@ function civicrm_api3_email_send($params) {
       $toName = $contact['display_name'];
     }
 
-    CRM_Utils_Hook::tokenValues($contact, $contact['contact_id'], NULL, $tokens);
-    // call token hook
-    $hookTokens = array();
-    CRM_Utils_Hook::tokens($hookTokens);
-    $categories = array_keys($hookTokens);
-
     // do replacements in text and html body
     $type = array('html', 'text');
     foreach ($type as $key => $value) {
@@ -180,11 +175,19 @@ function civicrm_api3_email_send($params) {
 						echo $e->getMessage(); exit();
 					}	
 				}
-        $$bodyType = CRM_Utils_Token::replaceDomainTokens($$bodyType, $domain, true, $tokens, true);
-				$$bodyType = CRM_Utils_Token::replaceHookTokens($$bodyType, $contact, $categories, true);
-        CRM_Utils_Token::replaceGreetingTokens($$bodyType, $contact, $contact['contact_id']);
-        $$bodyType = CRM_Utils_Token::replaceContactTokens($$bodyType, $contact, false, $tokens, false, true);
-        $$bodyType = CRM_Utils_Token::replaceComponentTokens($$bodyType, $contact, $tokens, true); 
+
+        foreach($tokens as $type => $tokenValue) {
+            foreach($tokenValue as $var) {
+                $contactKey = null;
+                if ($type === 'contact') {
+                    $contactKey = "$var";
+                }
+                else {
+                    $contactKey = "$type.$var";
+                }
+                CRM_Utils_Token::token_replace($type, $var, $contact[$contactKey], $$bodyType);
+            }
+        }
       }
     }
     $html = $body_html;
