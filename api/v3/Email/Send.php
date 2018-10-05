@@ -11,7 +11,6 @@
 function _civicrm_api3_email_send_spec(&$spec) {
   $spec['contact_id'] = array(
   	'title' => 'Contact ID',
-    'type' => CRM_Utils_Type::T_INT,
     'api.required' => 1,
 	);
   $spec['template_id'] = array(
@@ -50,7 +49,7 @@ function _civicrm_api3_email_send_spec(&$spec) {
  * @see civicrm_api3_create_error
  * @throws API_Exception
  */
-function civicrm_api3_email_send($params) {	
+function civicrm_api3_email_send($params) {
   $version = CRM_Core_BAO_Domain::version();
   if (!preg_match('/[0-9]+(,[0-9]+)*/i', $params['contact_id'])) {
     throw new API_Exception('Parameter contact_id must be a unique id or a list of ids separated by comma');
@@ -168,12 +167,12 @@ function civicrm_api3_email_send($params) {
       $bodyType = "body_{$value}";
       if ($$bodyType) {
       	if ($contribution_id) {
-					try {
-						$contribution = civicrm_api3('Contribution', 'getsingle', array('id' => $contribution_id));
-						$$bodyType = CRM_Utils_Token::replaceContributionTokens($$bodyType, $contribution, true, $tokens);
-					} catch (Exception $e) {
-						echo $e->getMessage(); exit();
-					}	
+            try {
+                $contribution = civicrm_api3('Contribution', 'getsingle', array('id' => $contribution_id));
+                $$bodyType = CRM_Utils_Token::replaceContributionTokens($$bodyType, $contribution, true, $tokens);
+            } catch (Exception $e) {
+                echo $e->getMessage(); exit();
+            }
 				}
 
         foreach($tokens as $type => $tokenValue) {
@@ -208,7 +207,7 @@ function civicrm_api3_email_send($params) {
     if (defined('CIVICRM_MAIL_SMARTY') && CIVICRM_MAIL_SMARTY) {
       $messageSubject = $smarty->fetch("string:{$messageSubject}");
     }
-    
+
     // set up the parameters for CRM_Utils_Mail::send
     $mailParams = array(
         'groupName' => 'E-mail from API',
@@ -299,4 +298,3 @@ function civicrm_api3_email_send($params) {
   return civicrm_api3_create_success($returnValues, $params, 'Email', 'Send');
   //throw new API_Exception(/*errorMessage*/ 'Everyone knows that the magicword is "sesame"', /*errorCode*/ 1234);
 }
-
