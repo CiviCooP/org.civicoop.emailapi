@@ -11,7 +11,6 @@
 function _civicrm_api3_email_send_spec(&$spec) {
   $spec['contact_id'] = array(
   	'title' => 'Contact ID',
-    'type' => CRM_Utils_Type::T_INT,
     'api.required' => 1,
 	);
   $spec['template_id'] = array(
@@ -50,7 +49,7 @@ function _civicrm_api3_email_send_spec(&$spec) {
  * @see civicrm_api3_create_error
  * @throws API_Exception
  */
-function civicrm_api3_email_send($params) {	
+function civicrm_api3_email_send($params) {
   $version = CRM_Core_BAO_Domain::version();
   if (!preg_match('/[0-9]+(,[0-9]+)*/i', $params['contact_id'])) {
     throw new API_Exception('Parameter contact_id must be a unique id or a list of ids separated by comma');
@@ -117,6 +116,7 @@ function civicrm_api3_email_send($params) {
         CRM_Utils_Token::getTokens($body_html),
         CRM_Utils_Token::getTokens($body_subject));
 
+    list($details) = CRM_Utils_Token::getTokenDetails($contactIds, $returnProperties, false, false, null, $tokens);
     // get replacement text for these tokens
     $returnProperties = array(
         'sort_name' => 1,
@@ -152,7 +152,7 @@ function civicrm_api3_email_send($params) {
       /**
        * Contact is decaused or has opted out from mailings so do not send the e-mail
        */
-      throw new API_Exception('Suppressed sending e-mail to: ' . $contact['display_name']);
+      continue;
     } else {
       /**
        * Send e-mail to the contact
@@ -161,30 +161,32 @@ function civicrm_api3_email_send($params) {
       $toName = $contact['display_name'];
     }
 
-    CRM_Utils_Hook::tokenValues($contact, $contact['contact_id'], NULL, $tokens);
-    // call token hook
-    $hookTokens = array();
-    CRM_Utils_Hook::tokens($hookTokens);
-    $categories = array_keys($hookTokens);
-
     // do replacements in text and html body
     $type = array('html', 'text');
     foreach ($type as $key => $value) {
       $bodyType = "body_{$value}";
       if ($$bodyType) {
       	if ($contribution_id) {
-					try {
-						$contribution = civicrm_api3('Contribution', 'getsingle', array('id' => $contribution_id));
-						$$bodyType = CRM_Utils_Token::replaceContributionTokens($$bodyType, $contribution, true, $tokens);
-					} catch (Exception $e) {
-						echo $e->getMessage(); exit();
-					}	
+            try {
+                $contribution = civicrm_api3('Contribution', 'getsingle', array('id' => $contribution_id));
+                $$bodyType = CRM_Utils_Token::replaceContributionTokens($$bodyType, $contribution, true, $tokens);
+            } catch (Exception $e) {
+                echo $e->getMessage(); exit();
+            }
 				}
-        $$bodyType = CRM_Utils_Token::replaceDomainTokens($$bodyType, $domain, true, $tokens, true);
-				$$bodyType = CRM_Utils_Token::replaceHookTokens($$bodyType, $contact, $categories, true);
-        CRM_Utils_Token::replaceGreetingTokens($$bodyType, $contact, $contact['contact_id']);
-        $$bodyType = CRM_Utils_Token::replaceContactTokens($$bodyType, $contact, false, $tokens, false, true);
-        $$bodyType = CRM_Utils_Token::replaceComponentTokens($$bodyType, $contact, $tokens, true); 
+
+        foreach($tokens as $type => $tokenValue) {
+            foreach($tokenValue as $var) {
+                $contactKey = null;
+                if ($type === 'contact') {
+                    $contactKey = "$var";
+                }
+                else {
+                    $contactKey = "$type.$var";
+                }
+                CRM_Utils_Token::token_replace($type, $var, $contact[$contactKey], $$bodyType);
+            }
+        }
       }
     }
     $html = $body_html;
@@ -205,7 +207,7 @@ function civicrm_api3_email_send($params) {
     if (defined('CIVICRM_MAIL_SMARTY') && CIVICRM_MAIL_SMARTY) {
       $messageSubject = $smarty->fetch("string:{$messageSubject}");
     }
-    
+
     // set up the parameters for CRM_Utils_Mail::send
     $mailParams = array(
         'groupName' => 'E-mail from API',
@@ -296,4 +298,3 @@ function civicrm_api3_email_send($params) {
   return civicrm_api3_create_success($returnValues, $params, 'Email', 'Send');
   //throw new API_Exception(/*errorMessage*/ 'Everyone knows that the magicword is "sesame"', /*errorCode*/ 1234);
 }
-
