@@ -112,7 +112,7 @@ function civicrm_api3_email_send($params) {
     //CRM-5734
 
     // get tokens to be replaced
-    $tokens = array_merge(CRM_Utils_Token::getTokens($body_text),
+    $tokens = array_merge_recursive(CRM_Utils_Token::getTokens($body_text),
         CRM_Utils_Token::getTokens($body_html),
         CRM_Utils_Token::getTokens($body_subject));
 
