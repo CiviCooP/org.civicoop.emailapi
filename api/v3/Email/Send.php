@@ -116,7 +116,6 @@ function civicrm_api3_email_send($params) {
         CRM_Utils_Token::getTokens($body_html),
         CRM_Utils_Token::getTokens($body_subject));
 
-    list($details) = CRM_Utils_Token::getTokenDetails($contactIds, $returnProperties, false, false, null, $tokens);
     // get replacement text for these tokens
     $returnProperties = array(
         'sort_name' => 1,
@@ -132,6 +131,7 @@ function civicrm_api3_email_send($params) {
         $returnProperties[$value] = 1;
       }
     }
+
     if ($case_id) {
       $contact['case.id'] = $case_id;
     }
@@ -161,31 +161,35 @@ function civicrm_api3_email_send($params) {
       $toName = $contact['display_name'];
     }
 
+    CRM_Utils_Hook::tokenValues($contact, $contact['contact_id'], NULL, $tokens);
+    // call token hook
+    $hookTokens = array();
+    CRM_Utils_Hook::tokens($hookTokens);
+    $categories = array_keys($hookTokens);
+
     // do replacements in text and html body
     $type = array('html', 'text');
     foreach ($type as $key => $value) {
       $bodyType = "body_{$value}";
       if ($$bodyType) {
-      	if ($contribution_id) {
-            try {
-                $contribution = civicrm_api3('Contribution', 'getsingle', array('id' => $contribution_id));
-                $$bodyType = CRM_Utils_Token::replaceContributionTokens($$bodyType, $contribution, true, $tokens);
-            } catch (Exception $e) {
-                echo $e->getMessage(); exit();
-            }
-				}
+        if ($contribution_id) {
+          try {
+            $contribution = civicrm_api3('Contribution', 'getsingle', ['id' => $contribution_id]);
+            $$bodyType = CRM_Utils_Token::replaceContributionTokens($$bodyType, $contribution, TRUE, $tokens);
+          } catch (Exception $e) {
+            // Do nothing
+          }
+        }
 
-        foreach($tokens as $type => $tokenValue) {
-            foreach($tokenValue as $var) {
-                $contactKey = null;
-                if ($type === 'contact') {
-                    $contactKey = "$var";
-                }
-                else {
-                    $contactKey = "$type.$var";
-                }
-                CRM_Utils_Token::token_replace($type, $var, $contact[$contactKey], $$bodyType);
-            }
+        $$bodyType = CRM_Utils_Token::replaceDomainTokens($$bodyType, $domain, TRUE, $tokens, TRUE);
+        $$bodyType = CRM_Utils_Token::replaceHookTokens($$bodyType, $contact, $categories, TRUE);
+        foreach ($tokens as $type => $tokenValue) {
+          CRM_Utils_Token::replaceGreetingTokens($$bodyType, $contact, $contact['contact_id']);
+          foreach ($tokenValue as $var) {
+            $$bodyType = CRM_Utils_Token::replaceContactTokens($$bodyType, $contact, FALSE, $tokens, FALSE, TRUE);
+            $contactKey = NULL;
+            $$bodyType = CRM_Utils_Token::replaceComponentTokens($$bodyType, $contact, $tokens, TRUE);
+          }
         }
       }
     }
