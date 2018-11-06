@@ -31,6 +31,8 @@ class CRM_Emailapi_CivirulesAction_SendToRelatedContact extends CRM_Civirules_Ac
       if ($alternativeAddress) {
         $params['alternative_receiver_address'] = $alternativeAddress;
       }
+      $extra_data = (array) $triggerData;
+      $params['extra_data'] = $extra_data["\0CRM_Civirules_TriggerData_TriggerData\0entity_data"];
       //execute the action
       civicrm_api3('Email', 'send', $params);
     }

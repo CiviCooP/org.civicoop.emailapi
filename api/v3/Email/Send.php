@@ -38,6 +38,10 @@ function _civicrm_api3_email_send_spec(&$spec) {
 		'title' => 'Bcc',
     'type' => CRM_Utils_Type::T_STRING,
 	);
+	$spec['extra_data'] = array(
+	  'title' => 'Extra data',
+    'type' => CRM_Utils_Type::T_TEXT,
+  );
 }
 
 /**
@@ -65,6 +69,10 @@ function civicrm_api3_email_send($params) {
 	if (isset($params['contribution_id'])) {
 		$contribution_id = $params['contribution_id'];
 	}
+	$extra_data = false;
+	if (isset($params['extra_data'])) {
+	  $extra_data = $params['extra_data'];
+  }
 
   // Compatibility with CiviCRM > 4.3
   if($version >= 4.4) {
@@ -116,28 +124,15 @@ function civicrm_api3_email_send($params) {
         CRM_Utils_Token::getTokens($body_html),
         CRM_Utils_Token::getTokens($body_subject));
 
-    // get replacement text for these tokens
-    $returnProperties = array(
-        'sort_name' => 1,
-        'email' => 1,
-        'do_not_email' => 1,
-        'is_deceased' => 1,
-        'on_hold' => 1,
-        'display_name' => 1,
-        'preferred_mail_format' => 1,
-    );
-    if (isset($tokens['contact'])) {
-      foreach ($tokens['contact'] as $key => $value) {
-        $returnProperties[$value] = 1;
-      }
-    }
-
     if ($case_id) {
       $contact['case.id'] = $case_id;
     }
 		if ($contribution_id) {
 			$contact['contribution_id'] = $contribution_id;
 		}
+		if ($extra_data) {
+		  $contact['extra_data'] = $extra_data;
+    }
 
     if ($alternativeEmailAddress) {
       /**
