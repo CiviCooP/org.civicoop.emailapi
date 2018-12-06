@@ -60,6 +60,15 @@ class CRM_Emailapi_Upgrader extends CRM_Emailapi_Upgrader_Base {
   }
 
   /**
+   * Upgrader to update old civicrm_queue_items so they reflect the new class names.
+   */
+  public function upgrade_1004() {
+    CRM_Core_DAO::executeQuery("UPDATE `civicrm_queue_item` SET data = REPLACE(data, '\"class_name\";s:28:\"CRM_Emailapi_CivirulesAction\"', '\"class_name\";s:33:\"CRM_Emailapi_CivirulesAction_Send\"')  WHERE data like '%\"class_name\";s:28:\"CRM_Emailapi_CivirulesAction\"%'");
+    CRM_Core_DAO::executeQuery("UPDATE `civicrm_queue_item` SET data = REPLACE(data, 'O:28:\"CRM_Emailapi_CivirulesAction\"', 'O:33:\"CRM_Emailapi_CivirulesAction_Send\"') WHERE data like '%O:28:\"CRM_Emailapi_CivirulesAction\"%' ");
+    return true;
+  }
+
+  /**
    * Example: Run an external SQL script when the module is uninstalled
    *
   public function uninstall() {
