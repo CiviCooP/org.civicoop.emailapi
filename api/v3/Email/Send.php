@@ -38,6 +38,10 @@ function _civicrm_api3_email_send_spec(&$spec) {
 		'title' => 'Bcc',
     'type' => CRM_Utils_Type::T_STRING,
 	);
+	$spec['subject'] = array(
+	  'title' => 'Subject',
+    'type' => CRM_Utils_Type::T_STRING,
+  );
 	$spec['extra_data'] = array(
 	  'title' => 'Extra data',
     'type' => CRM_Utils_Type::T_TEXT,
@@ -100,7 +104,12 @@ function civicrm_api3_email_send($params) {
 
   $body_text    = $messageTemplates->msg_text;
   $body_html    = $messageTemplates->msg_html;
-  $body_subject = $messageTemplates->msg_subject;
+  if (isset($params['subject']) && !empty($params['subject'])) {
+    $body_subject = $params['subject'];
+  }
+  else {
+    $body_subject = $messageTemplates->msg_subject;
+  }
   if (!$body_text) {
     $body_text = CRM_Utils_String::htmlToText($body_html);
   }
