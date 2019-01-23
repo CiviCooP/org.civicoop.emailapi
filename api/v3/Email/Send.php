@@ -185,16 +185,11 @@ function civicrm_api3_email_send($params) {
           }
         }
 
+        CRM_Utils_Token::replaceGreetingTokens($$bodyType, $contact, $contact['contact_id']);
         $$bodyType = CRM_Utils_Token::replaceDomainTokens($$bodyType, $domain, TRUE, $tokens, TRUE);
+        $$bodyType = CRM_Utils_Token::replaceContactTokens($$bodyType, $contact, FALSE, $tokens, FALSE, TRUE);
+        $$bodyType = CRM_Utils_Token::replaceComponentTokens($$bodyType, $contact, $tokens, TRUE);
         $$bodyType = CRM_Utils_Token::replaceHookTokens($$bodyType, $contact, $categories, TRUE);
-        foreach ($tokens as $type => $tokenValue) {
-          CRM_Utils_Token::replaceGreetingTokens($$bodyType, $contact, $contact['contact_id']);
-          foreach ($tokenValue as $var) {
-            $$bodyType = CRM_Utils_Token::replaceContactTokens($$bodyType, $contact, FALSE, $tokens, FALSE, TRUE);
-            $contactKey = NULL;
-            $$bodyType = CRM_Utils_Token::replaceComponentTokens($$bodyType, $contact, $tokens, TRUE);
-          }
-        }
       }
     }
     $html = $body_html;
