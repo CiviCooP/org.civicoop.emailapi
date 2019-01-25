@@ -72,7 +72,8 @@ function civicrm_api3_email_send($params) {
 	$contribution_id = false;
 	if (isset($params['contribution_id'])) {
 		$contribution_id = $params['contribution_id'];
-  } else if (!empty($params['extra_data']['contribution'])) {
+  }
+  elseif (!empty($params['extra_data']['contribution'])) {
     $contribution_id = $params['extra_data']['contribution']['contribution_id'];
   }
 	$extra_data = false;
