@@ -42,16 +42,18 @@ class CRM_Emailapi_CivirulesAction_SendToRolesOnCase extends CRM_Civirules_Actio
       $dir = 'a';
     }
     $relationship_type_id = substr($relationship_type, 2);
-    $dao = CRM_Core_DAO::executeQuery("
-        SELECT contact_id_{$dir} AS contact_id
+    $sql = "SELECT contact_id_{$dir} AS contact_id
         FROM civicrm_relationship r
         INNER JOIN civicrm_contact c ON c.id = r.contact_id_{$dir} 
-        WHERE case_id = %1 AND relationship_type_id = %2 AND is_active = 1 AND (start_date IS NULL OR start_date <= CURRENT_DATE()) AND (end_date IS NULL OR end_date >= CURRENT_DATE())
+        WHERE is_active = 1 AND (start_date IS NULL OR start_date <= CURRENT_DATE()) AND (end_date IS NULL OR end_date >= CURRENT_DATE())
         AND c.is_deleted = 0
-    ", array(
-      1 => array($case_id, 'Integer'),
-      2 => array($relationship_type_id, 'Integer'),
-    ));
+        AND case_id = %1";
+    $sqlParams[1] = array($case_id, 'Integer');
+    if ($relationship_type_id) {
+      $sql .= " AND relationship_type_id = %2";
+      $sqlParams[2] = array($relationship_type_id, 'Integer');
+    }
+    $dao = CRM_Core_DAO::executeQuery($sql,$sqlParams);
     $contacts = array();
     if ($dao) {
       while($dao->fetch()) {
