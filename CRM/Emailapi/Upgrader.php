@@ -70,6 +70,11 @@ class CRM_Emailapi_Upgrader extends CRM_Emailapi_Upgrader_Base {
     return true;
   }
 
+  public function upgrade_1005() {
+    CRM_Core_DAO::executeQuery("INSERT INTO civirule_action (name, label, class_name, is_active) VALUES('emailapi_send_rolesoncase', 'Send E-mail to contacts on a case', 'CRM_Emailapi_CivirulesAction_SendToRolesOnCase', 1);");
+    return true;
+  }
+
   /**
    * Example: Run an external SQL script when the module is uninstalled
    *
