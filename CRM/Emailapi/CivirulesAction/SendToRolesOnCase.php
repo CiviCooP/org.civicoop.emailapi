@@ -6,6 +6,8 @@
 
 class CRM_Emailapi_CivirulesAction_SendToRolesOnCase extends CRM_Civirules_Action {
 
+  protected static $alreadySend = array();
+
   /**
    * Process the action
    *
@@ -19,8 +21,11 @@ class CRM_Emailapi_CivirulesAction_SendToRolesOnCase extends CRM_Civirules_Actio
 
     // Find the related contact(s)
     $related_contacts = $this->getRelatedContacts($case['id'], $actionParams['relationship_type']);
-    CRM_Core_Error::debug_log_message(var_export($related_contacts, true), false, 'civirules');
     foreach($related_contacts as $related_contact_id) {
+      // Make sure an e-mail is only send once for a case.
+      if (isset(self::$alreadySend[$case['id']][$related_contact_id])) {
+        continue;
+      }
       $params = $actionParams;
       $params['contact_id'] = $related_contact_id;
 
@@ -33,6 +38,8 @@ class CRM_Emailapi_CivirulesAction_SendToRolesOnCase extends CRM_Civirules_Actio
       $params['extra_data'] = $extra_data["\0CRM_Civirules_TriggerData_TriggerData\0entity_data"];
       //execute the action
       civicrm_api3('Email', 'send', $params);
+      
+      self::$alreadySend[$case['id']][$related_contact_id] = true;
     }
   }
 
