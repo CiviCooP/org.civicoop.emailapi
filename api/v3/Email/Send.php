@@ -108,10 +108,10 @@ function civicrm_api3_email_send($params) {
   $body_text    = $messageTemplates->msg_text;
   $body_html    = $messageTemplates->msg_html;
   if (isset($params['subject']) && !empty($params['subject'])) {
-    $body_subject = $params['subject'];
+    $messageSubject = $params['subject'];
   }
   else {
-    $body_subject = $messageTemplates->msg_subject;
+    $messageSubject = $messageTemplates->msg_subject;
   }
   if (!$body_text) {
     $body_text = CRM_Utils_String::htmlToText($body_html);
@@ -134,7 +134,7 @@ function civicrm_api3_email_send($params) {
     // get tokens to be replaced
     $tokens = array_merge_recursive(CRM_Utils_Token::getTokens($body_text),
         CRM_Utils_Token::getTokens($body_html),
-        CRM_Utils_Token::getTokens($body_subject));
+        CRM_Utils_Token::getTokens($messageSubject));
 
     if ($case_id) {
       $contact['case.id'] = $case_id;
@@ -205,7 +205,8 @@ function civicrm_api3_email_send($params) {
     }
 
     // do replacements in message subject
-    $messageSubject = CRM_Utils_Token::replaceContactTokens($body_subject, $contact, false, $tokens);
+    CRM_Utils_Token::replaceGreetingTokens($messageSubject, $contact, $contact['contact_id']);
+    $messageSubject = CRM_Utils_Token::replaceContactTokens($messageSubject, $contact, false, $tokens);
     $messageSubject = CRM_Utils_Token::replaceDomainTokens($messageSubject, $domain, true, $tokens);
     $messageSubject = CRM_Utils_Token::replaceComponentTokens($messageSubject, $contact, $tokens, true);
     $messageSubject = CRM_Utils_Token::replaceHookTokens($messageSubject, $contact, $categories, true);
